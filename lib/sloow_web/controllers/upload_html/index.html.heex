@@ -1,0 +1,5 @@
+<.form for={@form} phx-change="validate" phx-submit="save">
+  <.input type="text" field={@form[:filename]} />
+  <%# <.input type="file" field={@form[:file]} /> %>
+  <button>Save</button>
+</.form>
