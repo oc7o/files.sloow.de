@@ -20,9 +20,20 @@ defmodule SloowWeb.Router do
   scope "/", SloowWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-    get "/hello", HelloController, :index
-    get "/upload", UploadController, :upload
+    live_session :maybe_authenticated, on_mount: [{SloowWeb.UserAuth, :mount_current_user}] do
+      live "/", HomeLive
+    end
+
+    # get "/", PageController, :home
+    # get "/hello", HelloController, :index
+  end
+
+  scope "/", SloowWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :authenticated, on_mount: [{SloowWeb.UserAuth, :ensure_authenticated}] do
+      live "/upload", FileUploadLive
+    end
   end
 
   # Other scopes may use custom stacks.
