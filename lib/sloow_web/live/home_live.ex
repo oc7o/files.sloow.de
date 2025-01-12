@@ -85,7 +85,12 @@ defmodule SloowWeb.HomeLive do
               <path d="M7.646 15.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 14.293V5.5a.5.5 0 0 0-1 0v8.793l-2.146-2.147a.5.5 0 0 0-.708.708z" />
             </svg>
           </a>
-          <button type="button" phx-click="delete_upload" phx-value-action={upload.id}>
+          <button
+            :if={@current_user == upload.user}
+            type="button"
+            phx-click="delete_upload"
+            phx-value-action={upload.id}
+          >
             Delete
           </button>
         </div>
@@ -95,7 +100,10 @@ defmodule SloowWeb.HomeLive do
   end
 
   def mount(_params, _session, socket) do
-    uploads = if connected?(socket), do: Sloow.Upload |> Sloow.Repo.all(), else: []
+    uploads =
+      if connected?(socket),
+        do: Sloow.Upload |> Sloow.Repo.all() |> Sloow.Repo.preload(:user),
+        else: []
 
     socket = socket |> assign(:sloow_uploads, uploads)
 
@@ -109,12 +117,17 @@ defmodule SloowWeb.HomeLive do
       {:reply, %{result: "You must be logged in to delete an upload."}, socket}
     else
       if socket.assigns.current_user.id == upload.user_id do
-        File.rm!(
-          Path.join(
-            Application.app_dir(:sloow, "priv/static/"),
-            upload.file
+        try do
+          File.rm!(
+            Path.join(
+              Application.app_dir(:sloow, "priv/static/"),
+              upload.file
+            )
           )
-        )
+        rescue
+          e ->
+            nil
+        end
 
         # TODO: delte file
         Sloow.Repo.delete!(upload)

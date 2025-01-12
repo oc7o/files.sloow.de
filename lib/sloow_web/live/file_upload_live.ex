@@ -9,12 +9,55 @@ defmodule SloowWeb.FileUploadLive do
     ~H"""
     <h1>Upload a File</h1>
 
-    <form phx-submit="save" phx-change="validate">
-      <label for="description">Description:</label>
-      <input type="text" name="name" value={@description} />
-      <.live_file_input live_file_input upload={@uploads.file} />
-      <button type="submit">Upload</button>
-    </form>
+    <div class="w-full max-w-xs">
+      <form
+        class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+        phx-submit="save"
+        phx-change="validate"
+      >
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+            Description
+          </label>
+          <input
+            name="description"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="text"
+            placeholder="Description"
+            value={@description}
+          />
+        </div>
+        <div class="mb-6">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="upload_field">
+            File
+          </label>
+          <.live_file_input
+            live_file_input
+            upload={@uploads.file}
+            name="upload_field"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
+        </div>
+        <div class="flex items-center justify-between">
+          <button
+            class="bg-zinc-800 px-2 py-1 hover:bg-zinc-700/80 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit"
+          >
+            Upload
+          </button>
+
+          <a
+            class="inline-block align-baseline font-bold text-sm bg-zinc-200 px-2 py-1 rounded hover:bg-zinc-300/80"
+            href="/"
+          >
+            Cancel
+          </a>
+        </div>
+      </form>
+      <p class="text-center text-gray-500 text-xs">
+        Please only upload files you have the rights on.
+      </p>
+    </div>
 
     <%= for entry <- @uploads.file.entries do %>
       <div>
