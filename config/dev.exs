@@ -3,10 +3,10 @@ import Config
 # Configure your database
 config :sloow, Sloow.Repo,
   username: "postgres",
-  password: "password",
-  hostname: "localhost",
+  password: "6ZxVM9ztk96wmcuQQRZ6",
+  hostname: "db",
   # "sloow_dev" "files_sloow_de"
-  database: "sloow_dev",
+  database: "files_sloow_de",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -20,7 +20,7 @@ config :sloow, Sloow.Repo,
 config :sloow, SloowWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 4000],
+  http: [ip: {0, 0, 0, 0}, port: 4000],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,

@@ -13,6 +13,9 @@ WORKDIR /app
 # Install Hex package manager.
 RUN mix local.hex --force
 
+#
+RUN mix deps.get
+
 # Compile the project.
 RUN mix do compile
 
