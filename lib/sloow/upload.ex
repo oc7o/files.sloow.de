@@ -36,4 +36,16 @@ defmodule Sloow.Upload do
     |> Sloow.Upload.create_upload_changeset(params)
     |> Sloow.Repo.insert()
   end
+
+  def update_description_changeset(upload, params) do
+    upload
+    |> cast(params, [:description])
+    |> validate_required([:description])
+  end
+
+  def update_description(upload, params) do
+    upload
+    |> Sloow.Upload.update_description_changeset(params)
+    |> Sloow.Repo.update()
+  end
 end

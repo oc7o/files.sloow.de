@@ -59,17 +59,26 @@ defmodule SloowWeb.HomeLive do
                 <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z" />
               </svg>
           <% end %>
-          <a href="#">
-            <h5 class="mb-2 text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
-              <%= upload.name %>
-            </h5>
-          </a>
-          <p :if={upload.description} class="mb-3 font-normal text-gray-500 dark:text-gray-400">
-            <%= upload.description %>
-          </p>
+          <form phx-submit="change_description" phx-value-action={upload.id}>
+            <div class="relative">
+              <input
+                name="description"
+                type="text"
+                class="rounded-lg text-2xl font-semibold text-gray-900 dark:text-white dark:bg-gray-800 border-gray-800 focus:border-gray-800 focus:ring-gray-800 block w-full p-2.5"
+                value={upload.description}
+              />
+              <button
+                :if={@current_user == upload.user}
+                type="submit"
+                class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Update
+              </button>
+            </div>
+          </form>
           <a
             href={upload.file}
-            class="inline-flex font-medium items-center text-gray-500 dark:text-gray-400"
+            class="inline-flex font-medium items-center text-gray-500 dark:text-gray-400 p-2.5"
             download
           >
             Download
@@ -90,6 +99,7 @@ defmodule SloowWeb.HomeLive do
             type="button"
             phx-click="delete_upload"
             phx-value-action={upload.id}
+            class="text-white end-2.5 bottom-2.5 bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
           >
             Delete
           </button>
@@ -136,10 +146,41 @@ defmodule SloowWeb.HomeLive do
 
         socket = socket |> assign(:sloow_uploads, uploads)
 
-        {:noreply, socket}
+        {:noreply, push_navigate(socket, to: "/")}
       else
         {:reply, %{result: "You must be the owner of an upload to delete it."}, socket}
       end
     end
+  end
+
+  def handle_event("change_description", params, socket) do
+    upload = Sloow.Upload |> Sloow.Repo.get(params["action"])
+
+    if socket.assigns.current_user == nil do
+      {:reply, %{result: "You must be logged in to delete an upload."}, socket}
+    else
+      if socket.assigns.current_user.id == upload.user_id do
+        # Change description
+
+        upload
+        |> Sloow.Upload.update_description(%{:description => params["description"]})
+
+        uploads = Sloow.Upload |> Sloow.Repo.all()
+
+        socket =
+          socket
+          |> assign(:sloow_uploads, uploads)
+          |> put_flash(:info, "changed description")
+
+        {:noreply, push_navigate(socket, to: "/")}
+      else
+        {:reply, %{result: "You must be the owner of an upload to delete it."}, socket}
+      end
+    end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("validate", _params, socket) do
+    {:noreply, socket}
   end
 end
