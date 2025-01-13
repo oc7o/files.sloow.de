@@ -7,7 +7,7 @@ defmodule SloowWeb.FileUploadLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <h1>Upload a File</h1>
+    <h1>Upload a file</h1>
 
     <div class="w-full max-w-xs">
       <form
@@ -21,10 +21,11 @@ defmodule SloowWeb.FileUploadLive do
           </label>
           <input
             name="description"
+            id="description"
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="text"
             placeholder="Description"
-            value={@description}
+            phx-update="ignore"
           />
         </div>
         <div class="mb-6">
@@ -72,7 +73,6 @@ defmodule SloowWeb.FileUploadLive do
     {:ok,
      socket
      |> assign(:uploaded_files, [])
-     |> assign(:description, "")
      |> allow_upload(:file,
        accept: ~w(.jpg .jpeg .png .pdf .zip),
        max_entries: 1,
@@ -91,7 +91,7 @@ defmodule SloowWeb.FileUploadLive do
   # end
 
   @impl Phoenix.LiveView
-  def handle_event("save", _params, socket) do
+  def handle_event("save", params, socket) do
     uploaded_files =
       consume_uploaded_entries(socket, :file, fn %{path: path}, entry ->
         dest =
@@ -105,13 +105,14 @@ defmodule SloowWeb.FileUploadLive do
             :name => Path.basename(entry.client_name),
             :file => "/uploads/" <> Path.basename(path) <> Path.extname(entry.client_name),
             :user_id => socket.assigns.current_user.id,
-            :description => socket.assigns.description
+            :description => params["description"]
           })
 
         case created_upload do
           {:ok, _upload} ->
             # You will need to create `priv/static/uploads` for `File.cp!/2` to work.
             File.cp!(path, dest)
+
             {:ok, ~p"/uploads/#{Path.basename(dest)}"}
 
           {:error, _changeset} ->
@@ -119,7 +120,8 @@ defmodule SloowWeb.FileUploadLive do
         end
       end)
 
-    {:noreply, update(socket, :uploaded_files, &(&1 ++ uploaded_files))}
+    {:noreply,
+     socket |> update(:uploaded_files, &(&1 ++ uploaded_files)) |> push_navigate(to: "/")}
   end
 
   @impl Phoenix.LiveView
